@@ -11,9 +11,10 @@ set -e
 srcdir=$(readlink -f "$1")
 buildir=$(readlink -f "$2")
 
-if [ -z "$srcdir" ] || [ -z "$buildir" ]; then
-    echo "usage: $0 <srcdir> <builddir>"
-    exit 1
+# only package appimage if not run on github actions since fuse is not supported there (packaging is done in the workflow)
+package_appimage=""
+if [ ! -z "GITHUB_ACTIONS" ]; then
+	package_appimage="--output appimage"
 fi
 
 gitversion=$(git -C "$srcdir" describe)
@@ -27,10 +28,10 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_DISABLE_FIND_PACKAGE_KGraphViewerPart=ON \
     -DAPPIMAGE_BUILD=ON "-DCMAKE_INSTALL_PREFIX=/usr" "$srcdir"
 
-make -j
+make -j $(nprocs)
 DESTDIR=appdir make install
 
-tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
+tar -cjvf "$buildir/../hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
     --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
     appdir/usr/bin/hotspot appdir/usr/lib64/libexec/hotspot-perfparser
 
@@ -57,7 +58,7 @@ cp -v "/usr/share/icons/breeze/breeze-icons.rcc" "appdir/usr/share/icons/breeze/
 # TODO: further down also add:
 # -e "./appdir/usr/plugins/kgraphviewerpart.so" \
 
-linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt \
+linuxdeploy --appdir appdir --plugin qt \
     -e "./appdir/usr/lib64/libexec/hotspot-perfparser" \
     -e "./appdir/usr/bin/hotspot" \
     -l "/usr/lib64/libz.so.1" \
@@ -68,6 +69,6 @@ linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt \
     -l /usr/lib/libd_demangle.so \
     -i "$srcdir/src/images/icons/512-hotspot_app_icon.png" --icon-filename=hotspot \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
-    --output appimage
+    ${package_appimage}
 
-mv Hotspot*x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
+mv Hotspot*x86_64.AppImage "/$builddir/../hotspot-$gitversion-x86_64.AppImage"

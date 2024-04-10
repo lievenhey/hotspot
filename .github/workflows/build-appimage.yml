@@ -17,31 +17,32 @@ jobs:
 
   appimage:
     needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/kdab/kdesrc-build
-      options: --privileged --device /dev/fuse --cap-add SYS_ADMIN
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: recursive
 
     - name: Build
-      run: scripts/appimage/build_appimage.sh "$PWD" "$PWD/build"
+      uses: docker://ghcr.io/lievenhey/kdesrc-build
+        #run: scripts/appimage/build_appimage.sh "$PWD" "$PWD/build"
+
+    - name: Package AppImage
+      run: |
+        find $GITHUB_WORKSPACE
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: appimage
         path: /output/hotspot*.AppImage
 
     - name: Upload Debug Info
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: debuginfo
         path: /output/hotspot-debuginfo-*
