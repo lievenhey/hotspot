@@ -17,6 +17,7 @@ jobs:
 
   appimage:
     needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
 
@@ -33,19 +34,20 @@ jobs:
 
     - name: Package AppImage
       run: |
-        find $GITHUB_WORKSPACE
+        echo "Path: $GITHUB_WORKSPACE"
+        find $GITHUB_WORKSPACE -name "*.AppImage"
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
         name: appimage
-        path: /output/hotspot*.AppImage
+        path: ${{ github.workspace }}/build/*.AppImage
 
     - name: Upload Debug Info
       uses: actions/upload-artifact@v4
       with:
         name: debuginfo
-        path: /output/hotspot-debuginfo-*
+        path: "{{ github.workspace }}/build/hotspot-debuginfo-**"
 
     - uses: ncipollo/release-action@v1
       with:
@@ -56,4 +58,4 @@ jobs:
         prerelease: true
         tag: "latest"
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "/output/*.AppImage"
+        artifacts: "${{ github.workspace }}/build/*.AppImage"
