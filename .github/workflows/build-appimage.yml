@@ -35,7 +35,7 @@ jobs:
     - name: Package AppImage
       run: |
         echo "Path: $GITHUB_WORKSPACE"
-        find $GITHUB_WORKSPACE -name "*.AppImage"
+        find $GITHUB_WORKSPACE -name "*debug*"
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
@@ -47,15 +47,15 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: debuginfo
-        path: "{{ github.workspace }}/build/hotspot-debuginfo-**"
+        path: ${{ github.workspace }}/build/hotspot-debuginfo-*
 
     - uses: ncipollo/release-action@v1
+      if: ${{ github.ref == 'refs/heads/master' }}
       with:
-        allowUpdates: true
-        omitName: true
-        omitBody: true
-        omitBodyDuringUpdate: true
+        name: "Nigthly build"
+        body: "The newest bleeding edge version of hotspot."
         prerelease: true
-        tag: "latest"
+        allowUpdates: true
+        removeArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "${{ github.workspace }}/build/*.AppImage"
