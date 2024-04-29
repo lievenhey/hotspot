@@ -31,7 +31,7 @@ jobs:
         name: "latest"
         tag: "latest"
         prerelease: true
-        body: "The newest version directly from the master branch. THIS IS BLEEDING ENDGE AND WILL MOST LIKLY CONTAIN UNKOWN BUGS."
+        body: "The newest version directly from the master branch. THIS IS BLEEDING ENDGE AND WILL MOST LIKELY CONTAIN UNKOWN BUGS."
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: |
           ${{ github.workspace }}/hotspot-debuginfo-*
