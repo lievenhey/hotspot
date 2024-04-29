@@ -78,7 +78,6 @@ std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
 
 int main(int argc, char** argv)
 {
-    qDebug() << "TEST New Version";
     KLocalizedString::setApplicationDomain("hotspot");
     QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
