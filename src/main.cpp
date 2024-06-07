@@ -105,6 +105,8 @@ int main(int argc, char** argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
+    qDebug() << "TEST2";
+
     const auto sysroot =
         QCommandLineOption(QStringLiteral("sysroot"),
                            QCoreApplication::translate("main", "Path to sysroot which is used to find libraries."),
