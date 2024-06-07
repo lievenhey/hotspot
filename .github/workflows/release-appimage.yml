@@ -21,6 +21,7 @@ jobs:
       uses: docker://ghcr.io/kdab/kdesrc-build:latest
 
     - name: Delete latest release
+      if: github.ref_name == 'master'
       run: |
         gh release delete continuous --cleanup-tag || true
       env:
@@ -33,6 +34,7 @@ jobs:
 
     - name: Create latest release
       uses: ncipollo/release-action@v1
+      if: github.ref_name == 'master'
       with:
         name: "continuous"
         tag: "continuous"
@@ -44,6 +46,7 @@ jobs:
           ${{ github.workspace }}/*.AppImage
 
     - name: Release latest release
+      if: github.ref_name == 'master'
       run: |
         gh release edit continuous --draft=false || true
       env:
@@ -54,3 +57,4 @@ jobs:
       with:
         token: ${{ github.token }}
         release-type: simple
+        target-branch: ${{ github.ref_name }}
