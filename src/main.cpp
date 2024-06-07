@@ -105,7 +105,7 @@ int main(int argc, char** argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
-    qDebug() << "TEST2";
+    qDebug() << "TEST3";
 
     const auto sysroot =
         QCommandLineOption(QStringLiteral("sysroot"),
