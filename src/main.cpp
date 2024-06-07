@@ -113,6 +113,8 @@ int main(int argc, char** argv)
                            QStringLiteral("path"));
     parser.addOption(sysroot);
 
+    qDebug() << "bugfix";
+
     const auto kallsyms = QCommandLineOption(
         QStringLiteral("kallsyms"),
         QCoreApplication::translate("main", "Path to kallsyms file which is used to resolve kernel symbols."),
