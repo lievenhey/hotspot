@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/lievenhey/hotspot/compare/v1.3.0...v1.4.0) (2024-06-07)
+
+
+### Features
+
+* toto ([b4ae276](https://github.com/lievenhey/hotspot/commit/b4ae276f9efca1e4d289631e83fdbaa743ec7213))
+
 ## [1.3.0](https://github.com/lievenhey/hotspot/compare/v1.2.0...v1.3.0) (2024-06-07)
 
 
