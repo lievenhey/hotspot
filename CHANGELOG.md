@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1](https://github.com/lievenhey/hotspot/compare/v1.3.0...v1.3.1) (2024-06-10)
+
+
+### Bug Fixes
+
+* bugfix ([01c4033](https://github.com/lievenhey/hotspot/commit/01c403340573698742d27b088f2bc1287a723fde))
+* test ([9d43198](https://github.com/lievenhey/hotspot/commit/9d43198efb1b05a446577749d18dd76831c5bd16))
+* use version.txt ([e92fba0](https://github.com/lievenhey/hotspot/commit/e92fba0da1fe83c7c7b52bc89453fbe3e9de5280))
+
 ## [1.3.0](https://github.com/lievenhey/hotspot/compare/v1.2.0...v1.3.0) (2024-06-07)
 
 
