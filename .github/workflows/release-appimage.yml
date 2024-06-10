@@ -50,6 +50,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
 
     - name: Create release PR
+      if: github.ref_name != 'master'
       uses: googleapis/release-please-action@v4.1.1
       with:
         token: ${{ github.token }}
