@@ -6,6 +6,9 @@ on:
     - 'master'
     - '1.*'
 
+env:
+  CONTINUOUS_BUILD: ${{ github.ref_name == 'master' && true || false }}
+
 jobs:
   latest-release:
     runs-on: ubuntu-latest
@@ -17,10 +20,32 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: TEST
+      run: echo "TEST ${{ env.CONTINUOUS_BUILD }}"
+
+    - name: Bundle sources artifacts
+      run: |
+        [[ ${{ env.CONTINUOUS_BUILD }} == true ]] && version="continuous" || version=$(git describe --tags | sed -En 's/(v[0-9\.]+)-.*/\1/p')
+
+        cp -r . "/tmp/hotspot-${version}"
+        cd /tmp
+
+        tar czf "${{ github.workspace }}/hotspot-perfparser-${version}.tar.gz" --exclude=.git "hotspot-${version}/3rdparty/perfparser"
+        zip -r "${{ github.workspace }}/hotspot-perfparser-${version}.zip" "hotspot-${version}/3rdparty/perfparser" -x "hotspot-${version}/3rdparty/perfparser/.git"
+
+        tar czf "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.tar.gz" --exclude=.git "hotspot-${version}/3rdparty/PrefixTickLabels"
+        zip -r "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.zip" "hotspot-${version}/3rdparty/PrefixTickLabels" -x "hotspot-${version}/3rdparty/PrefixTickLabels/.git"
+
+        tar czf "${{ github.workspace }}/hotspot-${version}.tar.gz" --exclude=.git --exclude=3rdparty/perfparser --exclude=3rdparty/PrefixTickLabels "hotspot-${version}"
+        zip -r "${{ github.workspace }}/hotspot-${version}.zip" "hotspot-${version}" -x "hotspot-${version}/3rdparty/" -x "hotspot-${version}/.git"
+
+        rm -rf "hotspot-${version}"
+
     - name: Build
       uses: docker://ghcr.io/kdab/kdesrc-build:latest
 
     - name: Delete latest release
+      if: env.CONTINUOUS_BUILD == 'true'
       run: |
         gh release delete continuous --cleanup-tag || true
       env:
@@ -28,11 +53,15 @@ jobs:
 
     - name: Rename artifacts
       run: |
-        cd ${{ github.workspace }} && mv hotspot-*.AppImage hotspot-continuous.AppImage
-        cd ${{ github.workspace }} && mv hotspot-debuginfo-*.tar.bz2 hotspot-debuginfo-continuous.tar.bz2
+        [[ ${{ env.CONTINUOUS_BUILD }} == true ]] && version="continuous" || version=$(git describe --tags | sed -En 's/(v[0-9\.]+)-.*/\1/p')
+        cd ${{ github.workspace }} && mv hotspot-*.AppImage "hotspot-${version}.AppImage"
+        cd ${{ github.workspace }} && mv hotspot-debuginfo-*.tar.bz2 "hotspot-debuginfo-${version}.tar.bz2"
 
     - name: Create latest release
       uses: ncipollo/release-action@v1
+      if: env.CONTINUOUS_BUILD == 'true'
+      env:
+        version: ${{ env.CONTINUOUS_BUILD == true && version="continuous" || version=$(git describe --tags | sed -En 's/(v[0-9\.]+)-.*/\1/p') }}
       with:
         name: "continuous"
         tag: "continuous"
@@ -40,18 +69,35 @@ jobs:
         body: "The newest version directly from the master branch. THIS IS BLEEDING ENDGE AND WILL MOST LIKELY CONTAIN UNKOWN BUGS."
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: |
-          ${{ github.workspace }}/hotspot-debuginfo-*
-          ${{ github.workspace }}/*.AppImage
+          "${{ github.workspace }}/hotspot-${version}.AppImage"
+          "${{ github.workspace }}/hotspot-${version}.tar.gz"
+          "${{ github.workspace }}/hotspot-${version}.zip"
+          "${{ github.workspace }}/hotspot-debuginfo-${version}.tar.bz2"
+          "${{ github.workspace }}/hotspot-perfparser-${version}.tar.gz"
+          "${{ github.workspace }}/hotspot-perfparser-${version}.zip"
+          "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.tar.gz"
+          "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.zip"
 
     - name: Release latest release
+      if: env.CONTINUOUS_BUILD == 'true'
       run: |
         gh release edit continuous --draft=false || true
       env:
         GH_TOKEN: ${{ github.token }}
 
     - name: Create release PR
-      if: github.ref_name != 'master'
+      id: release
       uses: googleapis/release-please-action@v4.1.1
+      if: env.CONTINUOUS_BUILD == 'false'
       with:
         token: ${{ github.token }}
         release-type: simple
+        target-branch: ${{ github.ref_name }}
+
+    - name: Upload Release Artifact
+      if: ${{ steps.release.outputs.release_created }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        [[ ${{ env.CONTINUOUS_BUILD }} == true ]] && version="continuous" || version=$(git describe --tags | sed -En 's/(v[0-9\.]+)-.*/\1/p')
+        gh release upload ${{ steps.release.outputs.tag_name }} "${{ github.workspace }}/hotspot-${version}.AppImage" "${{ github.workspace }}/hotspot-${version}.tar.gz" "${{ github.workspace }}/hotspot-${version}.zip" "${{ github.workspace }}/hotspot-debuginfo-${version}.tar.bz2" "${{ github.workspace }}/hotspot-perfparser-${version}.tar.gz" "${{ github.workspace }}/hotspot-perfparser-${version}.zip" "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.tar.gz" "${{ github.workspace }}/hotspot-PrefixTickLabels-${version}.zip"
