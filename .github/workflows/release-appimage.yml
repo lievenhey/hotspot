@@ -6,6 +6,9 @@ on:
     - 'master'
     - '1.*'
 
+env:
+  CONTINUOUS_BUILD: ${{ github.ref_name == 'master' }}
+
 jobs:
   latest-release:
     runs-on: ubuntu-latest
@@ -17,11 +20,26 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Bundle sources artifacts
+      run: |
+        version=$(git describe --tags | sed -En 's/(v[0-9\.]+)-.*/\1/p')
+        cp . "hotspot-${version}"
+        tar czf "hotspot-perfparser-${version}.tar.gz" --exclude=.git "hotspot-${version}/3rdparty/perfparser"
+        zip -r "hotspot-perfparser-${version}.zip" "hotspot-${version}/3rdparty/perfparser" -x "hotspot-${version}/3rdparty/perfparser/.git"
+
+        tar czf "hotspot-PrefixTickLabels-${version}.tar.gz" --exclude=.git "hotspot-${version}/3rdparty/PrefixTickLabels"
+        zip -r "hotspot-PrefixTickLabels-${version}.zip" "hotspot-${version}/3rdparty/PrefixTickLabels" -x "hotspot-${version}/3rdparty/PrefixTickLabels/.git"
+
+        tar czf "hotspot-${version}.tar.gz" --exclude=".git,perfparser,PrefixTickLabels" "hotspot-${version}"
+        zip -r "hotspot-${version}.zip" "hotspot-${version}" -x "hotspot-${version}/3rdparty/" -x "hotspot-${version}/.git"
+
+        rm -rf "hotspot-${version}"
+
     - name: Build
       uses: docker://ghcr.io/kdab/kdesrc-build:latest
 
     - name: Delete latest release
-      if: github.ref_name == 'master'
+      if: ${{ CONTINUOUS_BUILD }}
       run: |
         gh release delete continuous --cleanup-tag || true
       env:
@@ -34,7 +52,7 @@ jobs:
 
     - name: Create latest release
       uses: ncipollo/release-action@v1
-      if: github.ref_name == 'master'
+      if: ${{ CONTINUOUS_BUILD }}
       with:
         name: "continuous"
         tag: "continuous"
@@ -43,10 +61,13 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: |
           ${{ github.workspace }}/hotspot-debuginfo-*
+          ${{ github.workspace }}/hotspot-perfparser-v*
+          ${{ github.workspace }}/hotspot-PrefixTickLabels-v*
+          ${{ github.workspace }}/hotspot-v*
           ${{ github.workspace }}/*.AppImage
 
     - name: Release latest release
-      if: github.ref_name == 'master'
+      if: ${{ CONTINUOUS_BUILD }}
       run: |
         gh release edit continuous --draft=false || true
       env:
@@ -54,6 +75,7 @@ jobs:
 
     - name: Create release PR
       uses: googleapis/release-please-action@v4.1.1
+      if: ${{ ! CONTINUOUS_BUILD }}
       with:
         token: ${{ github.token }}
         release-type: simple
