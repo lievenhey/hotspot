@@ -100,6 +100,8 @@ int main(int argc, char** argv)
     initRCCIconTheme();
 #endif
 
+    qDebug() << "TEST";
+
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
     parser.addHelpOption();

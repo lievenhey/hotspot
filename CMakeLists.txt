@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
+
+file(STRINGS "version.txt" version)
+
 project(
     hotspot
-    VERSION 1.5.80
+    VERSION ${version}
     LANGUAGES CXX C
 )
 
