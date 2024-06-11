@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.1](https://github.com/lievenhey/hotspot/compare/v1.4.0...v1.4.1) (2024-06-11)
+
+
+### Bug Fixes
+
+* dings ([30782cb](https://github.com/lievenhey/hotspot/commit/30782cbb8c3a7b823c5f2d93af7c02508dae6d49))
+* test ([b5a014a](https://github.com/lievenhey/hotspot/commit/b5a014a9726d5fc8eb75ee6bb764218359b71a74))
+* use version.txt ([029bfd8](https://github.com/lievenhey/hotspot/commit/029bfd8f6e3cd1aa1db0b414c259f4a6e50533ac))
+
 ## [1.4.0](https://github.com/lievenhey/hotspot/compare/v1.3.0...v1.4.0) (2024-06-07)
 
 
